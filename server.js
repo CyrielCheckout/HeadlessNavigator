@@ -7,10 +7,9 @@ var path = require('path');
 var indexRouter = require('./routes/index');
 var disputesRouter = require('./routes/chromeless');
 const cors = require('cors');
+var morgan = require('morgan');
 
-
-
-
+app.use(morgan('dev'));
 app.use(cors());
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
