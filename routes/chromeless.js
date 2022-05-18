@@ -99,4 +99,85 @@ router.post('/PayPal', async function(req, res, next) {
             .json(err);
     }
 });
+router.post('/Bancontact', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.Bancontact, { waitUntil: 'networkidle0' });
+        await page.select('select[name="result"]', 'succeeded');
+        await page.click('#submitbutton', { button: "left" });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
+
+router.post('/Sofort', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.Sofort, { waitUntil: 'networkidle0' });
+        const button = await page.$('#modal-button-container > button.cookie-modal-accept-all.button-primary');
+        await button.evaluate(b => b.click());
+        const [bank] = await page.$x("//p[contains(., 'Demo Bank')]");
+        if (bank) {
+            await bank.evaluate(b => b.click());
+        }
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        //await page.click('#modal-button-container > button.cookie-modal-accept-all.button-primary', { button: "left" });
+        await page.type('#BackendFormLOGINNAMEUSERID', '88888888', { delay: 100 });
+        await page.type('#BackendFormUSERPIN', '12345678', { delay: 100 });
+        const button2 = await page.$('#WizardForm > button');
+        await button2.evaluate(b => b.click());
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        const button3 = await page.$('#WizardForm > button');
+        await button3.evaluate(b => b.click());
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await page.type('#BackendFormTan', '12345', { delay: 100 });
+        const button4 = await page.$('#WizardForm > button');
+        await button4.evaluate(b => b.click());
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
+router.post('/Ideal', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.Ideal, { waitUntil: 'networkidle0' });
+        await page.click('#data > table > tbody > tr:nth-child(2) > td > table > tbody > tr > td > table > tbody > tr > td > form > table > tbody > tr:nth-child(3) > td:nth-child(1) > input', { button: "left" });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
 module.exports = router;
