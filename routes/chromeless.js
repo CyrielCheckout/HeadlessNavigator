@@ -10,9 +10,9 @@ router.post('/3DS', async function(req, res, next) {
     console.log('Got url:', req.url);
     console.log("Request Params: ", req.body);
     try {
-        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         page = await browser.newPage();
-        const goto = await page.goto(req.body.TRHEEDSURL, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         const frame = page.frames().find((frame) => frame.name() === 'cko-3ds2-iframe');
         const exists = await frame.$eval('.title', () => true).catch(() => false);
         console.log(exists);
@@ -53,7 +53,7 @@ router.post('/3DSFrictionless', async function(req, res, next) {
     try {
         browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         const page = await browser.newPage();
-        const goto = await page.goto(req.body.TRHEEDSURL, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
         browser.close();
         res
@@ -71,9 +71,9 @@ router.post('/PayPal', async function(req, res, next) {
     console.log('Got url:', req.url);
     console.log("Request Params: ", req.body);
     try {
-        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         const page = await browser.newPage();
-        const goto = await page.goto(req.body.PayPalURL, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         const text = await page.$eval('#headerText', (element) => element.textContent);
         const cookies = await page.click('#acceptAllButton', { button: "left" });
         const email = await page.type('#email', 'sb-20dly16238372@personal.example.com', { delay: 100 });
@@ -103,9 +103,9 @@ router.post('/Bancontact', async function(req, res, next) {
     console.log('Got url:', req.url);
     console.log("Request Params: ", req.body);
     try {
-        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         const page = await browser.newPage();
-        const goto = await page.goto(req.body.Bancontact, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         await page.select('select[name="result"]', 'succeeded');
         await page.click('#submitbutton', { button: "left" });
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
@@ -125,9 +125,9 @@ router.post('/Sofort', async function(req, res, next) {
     console.log('Got url:', req.url);
     console.log("Request Params: ", req.body);
     try {
-        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         const page = await browser.newPage();
-        const goto = await page.goto(req.body.Sofort, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         const button = await page.$('#modal-button-container > button.cookie-modal-accept-all.button-primary');
         await button.evaluate(b => b.click());
         const [bank] = await page.$x("//p[contains(., 'Demo Bank')]");
@@ -164,10 +164,96 @@ router.post('/Ideal', async function(req, res, next) {
     console.log('Got url:', req.url);
     console.log("Request Params: ", req.body);
     try {
-        browser = await puppeteer.launch({ headless: true, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
         const page = await browser.newPage();
-        const goto = await page.goto(req.body.Ideal, { waitUntil: 'networkidle0' });
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
         await page.click('#data > table > tbody > tr:nth-child(2) > td > table > tbody > tr > td > table > tbody > tr > td > form > table > tbody > tr:nth-child(3) > td:nth-child(1) > input', { button: "left" });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
+
+router.post('/EPS', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
+        await page.type('#tags', 'HYPTAT22XXX', { delay: 100 });
+        await page.waitForSelector('#ui-id-2');
+        const button1 = await page.$('#ui-id-2');
+        await button1.evaluate(b => b.click());
+        await page.click("#idtoGiropayDiv > input", { button: "left" });
+        await page.click("#yes", { button: "left" });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await page.click("#sbtnLogin", { button: "left" });
+        await page.waitForSelector('#sbtnSign');
+        await page.click("#sbtnSign", { button: "left" });
+        await page.waitForSelector('#sbtnSignSingle');
+        await page.click("#sbtnSignSingle", { button: "left" });
+        await page.waitForSelector('#mobileTan');
+        await page.type('#mobileTan', '123456', { delay: 100 });
+        await page.click("#sbtnOk", { button: "left" });
+        await page.waitForSelector('#content > div:nth-child(4) > div > form > div.actions > input[type=submit]');
+        await page.click("#content > div:nth-child(4) > div > form > div.actions > input[type=submit]", { button: "left" });
+        //await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
+router.post('/Multibanco', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
+        await page.click("#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button", { button: "left" });
+        await page.waitForSelector('#sim-container > div > div.container > div > div:nth-child(3) > button');
+        await page.click("#sim-container > div > div.container > div > div:nth-child(3) > button", { button: "left" });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await browser.close();
+        res
+            .status(200)
+            .json({ "Status": "success" });
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+});
+
+router.post('/P24', async function(req, res, next) {
+    console.log('Got url:', req.url);
+    console.log("Request Params: ", req.body);
+    try {
+        browser = await puppeteer.launch({ headless: req.body.Headless, executablePath: "/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome", defaultViewport: null });
+        const page = await browser.newPage();
+        const goto = await page.goto(req.body.RedirectURL, { waitUntil: 'networkidle0' });
+        await page.click("#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button", { button: "left" });
+        await page.waitForSelector('#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button');
+        await page.click("#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button", { button: "left" });
+        await page.waitForSelector('#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button');
+        await page.click("#col-transaction-payment > div > div.panel-body > div:nth-child(2) > div:nth-child(2) > button", { button: "left" });
+        await page.waitForSelector('#sim-container > div > div.container > div > div:nth-child(3) > button');
+        await page.click("#sim-container > div > div.container > div > div:nth-child(3) > button", { button: "left" });
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
         await browser.close();
         res
