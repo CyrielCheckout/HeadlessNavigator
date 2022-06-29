@@ -28,7 +28,7 @@ router.post('/3DS', async function(req, res, next) {
                 .json({ "Status": "Challenge : OK" });
         } else {
             url = page.url().split("?");
-            if (url[0] === "http://localhost//notification.php") {
+            if (url[0] === req.body.ReturnURL) {
                 browser.close();
             } else {
                 await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
