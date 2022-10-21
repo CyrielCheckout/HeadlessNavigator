@@ -86,7 +86,13 @@ router.post('/PayPal', async function(req, res, next) {
             size: 500,
             delay: 250
         })
-        const payment = await page.click('#payment-submit-btn', { button: "left" });
+        //const payment = await page.click('#payment-submit-btn', { button: "left" });
+        //await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await page.click('#button > button', { button: "left" });
+        await page.waitForSelector('#confirmButtonTop', { visible: true });
+        //await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        console.log("wait done")
+        await page.click('#confirmButtonTop', { button: "left" });
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
         const closebrowser = await browser.close();
         res
