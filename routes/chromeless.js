@@ -3,6 +3,7 @@ require('dotenv').config();
 var router = express.Router();
 const puppeteer = require('puppeteer');
 const { scrollPageToBottom } = require('puppeteer-autoscroll-down');
+const CreateBatch = require('.././Controller/CreateBatch')
 var browser;
 var page;
 
@@ -46,6 +47,7 @@ router.post('/3DS', async function(req, res, next) {
             .json(err);
     }
 });
+
 
 router.post('/3DSFrictionless', async function(req, res, next) {
     console.log('Got url:', req.url);
@@ -324,4 +326,23 @@ router.post('/GiroPay', async function(req, res, next) {
             .json(err);
     }
 });
+
+router.post('/GetNewBatch', async function(req, res, next) {
+    console.log("Got body :",req.body)
+    const numberofTransaction = req.body.TRSNumber; // nombre de transactions souhaité
+    const acceptanceRate = req.body.ACCPRate; // taux d'acceptation souhaité en pourcentage
+    const schemeDistribution = req.body.SCHEMRep
+    try {
+        batchresult = await CreateBatch.TRSBatch(acceptanceRate,numberofTransaction,schemeDistribution)
+        res
+            .status(200)
+            .json(batchresult);
+    } catch (err) {
+        console.log(err.name);
+        console.log(err);
+        res
+            .status(err.http_code)
+            .json(err);
+    }
+}),
 module.exports = router;

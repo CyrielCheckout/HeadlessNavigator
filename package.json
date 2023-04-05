@@ -10,6 +10,7 @@
         "morgan": "^1.10.0",
         "nodemon": "^2.0.16",
         "puppeteer": "^14.0.0",
-        "puppeteer-autoscroll-down": "^1.1.1"
+        "puppeteer-autoscroll-down": "^1.1.1",
+        "checkout-sdk-node": "^2.0.0"
     }
 }
