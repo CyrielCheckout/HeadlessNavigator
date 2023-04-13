@@ -1,5 +1,8 @@
 const CKO = require('./CKO.connect');
-const IdempotencyKeygen = require('../IdempotencyKey')
+const IdempotencyKeygen = require('../IdempotencyKey');
+var random_name = require('node-random-name');
+var randomEmail = require('random-email');
+var randomip = require('random-ip');
 
 async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, captureauto, paymenttype, description) {
     var transaction;
@@ -22,14 +25,15 @@ async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderRefe
         processing: {
             preferred_scheme: preferred_scheme
         },
-        threeDs: {
-            enabled: false
+        "3ds": {
+            enabled: true
         },
-        /*customer: {
-            id: CustomerID,
-            email: CustomerEmail,
-            name: CustomerName
-        }*/
+        payment_ip : randomip('0.0.0.0', 16,24),
+        customer: {
+            //id: CustomerID,
+            email: randomEmail({ domain: 'gmail.com' }),
+            name: random_name
+        }
     }, IdempotencyKeygenerated);
     //console.log(transaction.status);
     if (transaction.status === "Pending" && transaction.requiresRedirect === true) {

@@ -3,14 +3,17 @@
         "start": "nodemon server.js"
     },
     "dependencies": {
+        "checkout-sdk-node": "^2.0.0",
         "cors": "^2.8.5",
         "dotenv": "^16.0.0",
         "express": "^4.18.1",
         "http-errors": "~1.6.3",
         "morgan": "^1.10.0",
+        "node-random-name": "^1.0.1",
         "nodemon": "^2.0.16",
         "puppeteer": "^14.0.0",
         "puppeteer-autoscroll-down": "^1.1.1",
-        "checkout-sdk-node": "^2.0.0"
+        "random-email": "^1.0.3",
+        "random-ip": "^0.0.1"
     }
 }
