@@ -11,7 +11,6 @@ const EPS = require('.././Controller/Headless/Headless.EPS');
 const Multibanco = require('.././Controller/Headless/Headless.Multibanco');
 const Giropay = require('.././Controller/Headless/Headless.Giropay');
 const P24 = require('.././Controller/Headless/Headless.P24');
-const PayPalPayment = require('.././Controller/CKO/CKO.payment.PayPal');
 
 router.post('/3DS', async function (req, res, next) {
     console.log('Got url:', req.url);
@@ -98,26 +97,17 @@ router.post('/GetNewBatch', async function (req, res, next) {
     const acceptanceRate = req.body.ACCPRate; // taux d'acceptation souhaité en pourcentage
     const schemeDistribution = req.body.SCHEMRep
     try {
-        batchresult = await CreateBatch.TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution)
+        batchresult = await CreateBatch.TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,req.body.WaitTime,req.body.headless,req.body.PayPalTRS)
         res
             .status(200)
             .json(batchresult);
     } catch (err) {
-        console.log(err.name);
+        //console.log(err.name);
         console.log(err);
         res
-            .status(err.http_code)
+            .status(500)
             .json(err);
     }
 }),
 
-router.post('/test', async function (req, res, next) {
-    console.log('Got url:', req.url);
-    console.log("Request Params: ", req.body);
-    test = await PayPalPayment.PayPalPayment(223, "tesd1234", "EUR", true, "regular", "test");
-    console.log(test);
-    res
-        .status(200)
-        .json(test);
-});
     module.exports = router;

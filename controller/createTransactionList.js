@@ -12,11 +12,11 @@ const FailedCard = {
     "Amex": ["371064645462927", "341829238058580"]
 };
 
-function generateTransactionArray(AcceptanceRate, numberofTransaction, schemeDistribution) {
+function generateTransactionArray(AcceptanceRate, numberofTransaction, schemeDistribution, numberPayPalTRS) {
     //Check if acceptance rate is greater than 0 and less than 100
     if (AcceptanceRate <= 0 || AcceptanceRate > 100) {
         throw new Error('The acceptance rate must be greater than 0 and less than 100.');
-    }
+    };
     //Check if scheme repartion is ok
     let totalPercentage = 0;
     Object.values(schemeDistribution).forEach((percentage) => {
@@ -53,51 +53,57 @@ function generateTransactionArray(AcceptanceRate, numberofTransaction, schemeDis
     console.log("number of Mastercard trs :", numMastercardr)
     console.log("number of CB trs :", numCBr)
     console.log("number of Amex trs :", numAmexr)
+    console.log("number of PayPal trs :", numberPayPalTRS)
     console.log("Somme de la repartition :",numVisa+numMastercard+numCB+numAmex+numVisar+numMastercardr+numCBr+numAmexr);
     let ResutArray = [];
 
     //Generate Visa accepted TRS
     for (let i = 0; i < numVisa; i++) {
         ChooseCardVisa = Math.floor(Math.random() * AcceptedCard.Visa.length);
-        ResutArray.push({ "CardNumber": AcceptedCard.Visa[ChooseCardVisa], "Scheme": "visa", "Status": "Accepted" });
+        ResutArray.push({"PaymentMethod": "Card", "CardNumber": AcceptedCard.Visa[ChooseCardVisa], "Scheme": "visa", "Status": "Accepted" });
     }
     //Generate Mastercard accepted TRS
     for (let i = 0; i < numMastercard; i++) {
         ChooseCardMastercard = Math.floor(Math.random() * AcceptedCard.Mastercard.length);
-        ResutArray.push({ "CardNumber": AcceptedCard.Mastercard[ChooseCardMastercard], "Scheme": "mastercard", "Status": "Accepted" });
+        ResutArray.push({"PaymentMethod": "Card", "CardNumber": AcceptedCard.Mastercard[ChooseCardMastercard], "Scheme": "mastercard", "Status": "Accepted" });
     }
     //Generate CartesBancaires accepted TRS
     for (let i = 0; i < numCB; i++) {
         ChooseCardCB = Math.floor(Math.random() * AcceptedCard.Cartes_Bancaires.length);
-        ResutArray.push({ "CardNumber": AcceptedCard.Cartes_Bancaires[ChooseCardCB], "Scheme": "cartes_bancaires", "Status": "Accepted" });
+        ResutArray.push({"PaymentMethod": "Card", "CardNumber": AcceptedCard.Cartes_Bancaires[ChooseCardCB], "Scheme": "cartes_bancaires", "Status": "Accepted" });
     }
     //Generate Amex accepted TRS
     for (let i = 0; i < numAmex; i++) {
         ChooseCardAmex = Math.floor(Math.random() * AcceptedCard.Amex.length);
-        ResutArray.push({ "CardNumber": AcceptedCard.Amex[ChooseCardAmex], "Scheme": "amex", "Status": "Accepted" });
+        ResutArray.push({"PaymentMethod": "Card", "CardNumber": AcceptedCard.Amex[ChooseCardAmex], "Scheme": "amex", "Status": "Accepted" });
     }
 
     //Generate Visa Refused TRS
     for (let i = 0; i < numVisar; i++) {
         ChooseCardVisa = Math.floor(Math.random() * FailedCard.Visa.length);
-        ResutArray.push({ "CardNumber": FailedCard.Visa[ChooseCardVisa], "Scheme": "visa", "Status": "Refused" });
+        ResutArray.push({ "PaymentMethod": "Card","CardNumber": FailedCard.Visa[ChooseCardVisa], "Scheme": "visa", "Status": "Refused" });
     }
     //Generate Mastercard Refused TRS
     for (let i = 0; i < numMastercardr; i++) {
         ChooseCardMastercard = Math.floor(Math.random() * FailedCard.Mastercard.length);
-        ResutArray.push({ "CardNumber": FailedCard.Mastercard[ChooseCardMastercard], "Scheme": "mastercard", "Status": "Refused" });
+        ResutArray.push({ "PaymentMethod": "Card","CardNumber": FailedCard.Mastercard[ChooseCardMastercard], "Scheme": "mastercard", "Status": "Refused" });
     }
     //Generate CartesBancaires Refused TRS
     for (let i = 0; i < numCBr; i++) {
         ChooseCardCB = Math.floor(Math.random() * FailedCard.Cartes_Bancaires.length);
-        ResutArray.push({ "CardNumber": FailedCard.Cartes_Bancaires[ChooseCardCB], "Scheme": "cartes_bancaires", "Status": "Refused" });
+        ResutArray.push({ "PaymentMethod": "Card","CardNumber": FailedCard.Cartes_Bancaires[ChooseCardCB], "Scheme": "cartes_bancaires", "Status": "Refused" });
     }
     //Generate Amex Refused TRS
     for (let i = 0; i < numAmexr; i++) {
         ChooseCardAmex = Math.floor(Math.random() * FailedCard.Amex.length);
-        ResutArray.push({ "CardNumber": FailedCard.Amex[ChooseCardAmex], "Scheme": "amex", "Status": "Refused" });
+        ResutArray.push({"PaymentMethod": "Card", "CardNumber": FailedCard.Amex[ChooseCardAmex], "Scheme": "amex", "Status": "Refused" });
     }
-
+    //Generate PayPal TRS TRS
+    if (numberPayPalTRS > 0){
+        for (let i = 0; i < numberPayPalTRS; i++) {
+            ResutArray.push({ "PaymentMethod": "PayPal","CardNumber": "N/A", "Scheme": "N/A", "Status": "N/A" });
+        }
+    }
     return ResutArray;
 }
 module.exports = { generateTransactionArray }

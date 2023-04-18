@@ -8,10 +8,10 @@ async function HeadlessPayPal(redirectionURL, headlessStatus) {
         const goto = await page.goto(redirectionURL, { waitUntil: 'networkidle0' });
         const text = await page.$eval('#headerText', (element) => element.textContent);
         //const cookies = await page.click('#acceptAllButton', { button: "left" });
-        const email = await page.type('#email', 'sb-20dly16238372@personal.example.com'/*, { delay: 100 }*/);
+        const email = await page.type('#email', 'sb-20dly16238372@personal.example.com', { delay: 100 });
         const validateNext = await page.click('#btnNext', { button: "left", waitUntil: 'networkidle0' });
         await page.waitForSelector('#password', { visible: true });
-        const password = await page.type('#password', '16238372'/*, { delay: 100 }*/);
+        const password = await page.type('#password', '16238372', { delay: 100 });
         const validate = await page.click('#btnLogin', { button: "left" });
         await page.waitForNavigation({ waitUntil: 'networkidle0' });
         /*const lastPosition = await scrollPageToBottom(page, {
