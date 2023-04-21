@@ -31,7 +31,8 @@ async function Headless3DS(redirectionURL, headlessStatus, NotifURL) {
         return result;
     } catch (err) {
         console.log(err);
-        return err;
+        err2 =  {"httpstatus":500,"Error" : err}
+        return err2;
     }
 };
 module.exports = { Headless3DS };
