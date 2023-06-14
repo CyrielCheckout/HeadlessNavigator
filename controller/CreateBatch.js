@@ -82,7 +82,8 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
         }
         TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
         NeedRefund = Math.floor(Math.random() * (numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS));
-        if (Refundnumber.includes === NeedRefund || TRSResult.status === "Captured") {
+        console.log("NeedRefund value :",NeedRefund, " Refundnumber include :",Refundnumber.includes(NeedRefund), " index value :"),Refundnumber.indexOf(NeedRefund);
+        if (Refundnumber.includes(NeedRefund)=== true && TRSResult.status === "Captured") {
             console.log("Transaction refunded :", TRS.PaymentId);
             TRSRefund = await CKOpayment.Refund(TRS.PaymentId);
             TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
