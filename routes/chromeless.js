@@ -11,6 +11,7 @@ const EPS = require('.././Controller/Headless/Headless.EPS');
 const Multibanco = require('.././Controller/Headless/Headless.Multibanco');
 const Giropay = require('.././Controller/Headless/Headless.Giropay');
 const P24 = require('.././Controller/Headless/Headless.P24');
+const Issuing = require('.././Controller/CKO/CKO.issuing');
 
 router.post('/3DS', async function (req, res, next) {
     console.log('Got url:', req.url);
@@ -95,12 +96,30 @@ router.post('/GetNewBatch', async function (req, res, next) {
     console.log("Got body :", req.body)
     const numberofTransaction = req.body.TRSNumber; // nombre de transactions souhaité
     const acceptanceRate = req.body.ACCPRate; // taux d'acceptation souhaité en pourcentage
-    const schemeDistribution = req.body.SCHEMRep
+    const schemeDistribution = req.body.SCHEMRep;
+    CurrencyList = req.body.currency;
     try {
-        batchresult = await CreateBatch.TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,req.body.WaitTime,req.body.headless,req.body.PayPalTRS)
+        batchresult = await CreateBatch.TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,req.body.WaitTime,req.body.headless,req.body.PayPalTRS,req.body.IdealTRS, req.body.BancontactTRS,req.body.GiropayTRS,req.body.MultiBancoTRS,CurrencyList, req.body.RefundRate)
         res
             .status(200)
             .json(batchresult);
+    } catch (err) {
+        //console.log(err.name);
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+}),
+
+router.post('/test', async function (req, res, next) {
+    console.log("Got body :", req.body)
+    try {
+        testresult = await Issuing.test()
+        console.log(testresult)
+        res
+            .status(200)
+            .json(testresult);
     } catch (err) {
         //console.log(err.name);
         console.log(err);

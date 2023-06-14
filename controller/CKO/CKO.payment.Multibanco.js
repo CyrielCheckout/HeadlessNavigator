@@ -4,24 +4,16 @@ var random_name = require('node-random-name');
 var randomEmail = require('random-email');
 var randomip = require('random-ip');
 
-async function PayPalPayment(amount, orderReference, currency, captureauto, paymenttype, description) {
+async function MultibancoPayment(amount, orderReference, currency, captureauto, paymenttype, description) {
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
     transaction = await CKO.payments.request({
         source: {
-            type: 'paypal',
-            invoice_number: orderReference,
-            recipient_name: random_name,
-            logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png",
-            brand_name: "Test PayPal"
+            type: 'multibanco',
+            account_holder_name: random_name(),
+            payment_country : "PT",
+            billing_descriptor : "CKO NODE JS TEST"
         },
-        items : [
-            {
-                name : "test",
-                unit_price : amount,
-                quantity : 1
-        }
-        ],
         currency: currency,
         amount: amount,
         reference: orderReference,
@@ -33,7 +25,41 @@ async function PayPalPayment(amount, orderReference, currency, captureauto, paym
         customer: {
             //id: CustomerID,
             email: randomEmail({ domain: 'gmail.com' }),
-            name: random_name
+            name: random_name()
+        },
+        billing_descriptor : {
+            name : "CKO NODE JS TEST",
+            city : "AixEnProvence"
+        },
+        shipping: {
+            address: {
+                address_line1: "20 bis rue la Fayette",
+                address_line2: "20 bis rue la Fayette",
+                city: "Paris",
+                state: "",
+                zip: "75000",
+                country: "FR"
+            },
+            phone: {
+                country_code: "+33",
+                number: "0606060606"
+            }
+        },
+        previous_payment_id: null,
+        risk: {
+            enabled: true
+        },
+        recipient: {
+            dob: "1995-05-31",
+            account_number: "5555554444",
+            zip: "W1T",
+            last_name: random_name(),
+            first_name: random_name(),
+            country: "FR"
+        },
+        metadata: {
+            "headless": false,
+            "autoRun": true
         }
     }, IdempotencyKeygenerated);
     //console.log(transaction.status);
@@ -48,5 +74,5 @@ async function PayPalPayment(amount, orderReference, currency, captureauto, paym
 
 
 module.exports = {
-    PayPalPayment
+    MultibancoPayment
 }

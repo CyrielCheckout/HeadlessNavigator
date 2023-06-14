@@ -10,7 +10,7 @@ async function Headless3DS(redirectionURL, headlessStatus, NotifURL) {
         if ((await page.$('body > .main-div > button')) !== null) {
             await page.click('body > .main-div > button');
             console.log("Intermediate action required");
-            result =  {"httpstatus":500,"authentication_type" : "Intermediate action required"}
+            result =  {"httpstatus":500,"authentication_type" : "Intermediate action required"};
         }
         if (await page.$('iframe[name="cko-3ds2-iframe"]') === null) {
             console.log("Frictionless");

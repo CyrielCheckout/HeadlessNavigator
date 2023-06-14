@@ -5,8 +5,10 @@ var randomEmail = require('random-email');
 var randomip = require('random-ip');
 
 async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, captureauto, paymenttype, description) {
+    console.log("TRS :",CardNumber, "Scheme :", preferred_scheme, "Amount :", amount, "OrderRef :",orderReference, "CVV :",cvv, "Currency :", currency);
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
+    if (preferred_scheme === "amex"){
     transaction = await CKO.payments.request({
         source: {
             type: 'card',
@@ -19,22 +21,86 @@ async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderRefe
         amount: amount,
         reference: orderReference,
         capture: captureauto,
+        success_url : "https://google.fr",
+        failure_url : "https://google.fr",
         //capture_on: capturedate,
         payment_type: paymenttype,
         description: description,
-        processing: {
-            preferred_scheme: preferred_scheme
-        },
         "3ds": {
-            enabled: true
+            enabled: false
         },
         payment_ip : randomip('0.0.0.0', 16,24),
         customer: {
             //id: CustomerID,
             email: randomEmail({ domain: 'gmail.com' }),
-            name: random_name
+            name: random_name()
         }
     }, IdempotencyKeygenerated);
+}
+else {transaction = await CKO.payments.request({
+    source: {
+        type: 'card',
+        number: CardNumber,
+        expiry_month: 6,
+        expiry_year: 2029,
+        cvv: cvv
+    },
+    currency: currency,
+    amount: amount,
+    reference: orderReference,
+    capture: captureauto,
+    success_url : "https://google.fr",
+    failure_url : "https://google.fr",
+    //capture_on: capturedate,
+    payment_type: paymenttype,
+    description: description,
+    processing: {
+        preferred_scheme: preferred_scheme
+    },
+    "3ds": {
+        enabled: true
+    },
+    payment_ip : randomip('192.168.2.0', 24),
+    customer: {
+        //id: CustomerID,
+        email: randomEmail({ domain: 'gmail.com' }),
+        name: random_name()
+    },
+    billing_descriptor : {
+        name : "CKO NODE JS TEST",
+        city : "AixEnProvence"
+    },
+    shipping: {
+        address: {
+            address_line1: "20 bis rue la Fayette",
+            address_line2: "20 bis rue la Fayette",
+            city: "Paris",
+            state: "",
+            zip: "75000",
+            country: "FR"
+        },
+        phone: {
+            country_code: "+33",
+            number: "0606060606"
+        }
+    },
+    previous_payment_id: null,
+    risk: {
+        enabled: true
+    },
+    recipient: {
+        dob: "1995-05-31",
+        account_number: "5555554444",
+        zip: "W1T",
+        last_name: random_name(),
+        first_name: random_name(),
+        country: "FR"
+    },
+    metadata: {
+        "headless": false,
+        "autoRun": true
+    }
+}, IdempotencyKeygenerated);}
     //console.log(transaction.status);
     if (transaction.status === "Pending" && transaction.requiresRedirect === true) {
         return { "requiresRedirect": transaction.requiresRedirect, "PaymentId": transaction.id, "TransactionStatus": transaction.status, "RedirectionURL": transaction._links.redirect.href }
@@ -87,5 +153,4 @@ module.exports = {
     Refund,
     Capture,
     Void,
-    PartialRefund
 }
