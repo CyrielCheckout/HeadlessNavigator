@@ -6,6 +6,7 @@ const CKOpaymentBancontact = require('./CKO/CKO.payment.Bancontact');
 const CKOpaymentGiropay = require('./CKO/CKO.payment.Giropay');
 const CKOpaymentMultibanco = require('./CKO/CKO.payment.Multibanco');
 const AleatData = require('./Orderreferencegenerator');
+const waitfor = require('./IdempotencyKey');
 const Headless3DS = require('./Headless/Headless.3DS');
 const PayPal = require('.././Controller/Headless/Headless.PayPal');
 const Ideal = require('.././Controller/Headless/Headless.Ideal');
@@ -22,9 +23,9 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
     console.log("Nombre de transaction :", transactionBatch.length);
     Refundnumber = [];
     for (let i = 0; i < Math.round((RefundRate * (numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS)) / 100); i++) {
-        Refundnumber.push(Math.round(Math.random() * (numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS)));
+        Refundnumber.push(Math.round(Math.random() * numberofTransaction));
     };
-    console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS, " transactions");
+    console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction , " transactions");
     lengthtable = transactionBatch.length;
     //console.log(transactionBatch);
     a = 0
@@ -35,7 +36,6 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
         if (transactionBatch[Randomtransaction].PaymentMethod === "Card") {
             if (transactionBatch[Randomtransaction].Scheme === "amex") { cvv = 1000; prefScheme = "amex"; } else { cvv = 100; prefScheme = transactionBatch[Randomtransaction].Scheme; }
             try {
-                console.log(transactionBatch[Randomtransaction].Currency)
                 TRS = await CKOpayment.MakeAuthorization(transactionBatch[Randomtransaction].CardNumber, prefScheme, TRSamount, TRSOrderRef, cvv, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch");
                 console.log(TRS);
             } catch (err) {
@@ -81,7 +81,7 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
             }
         }
         TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
-        NeedRefund = Math.floor(Math.random() * (numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS));
+        NeedRefund = Math.floor(Math.random() * numberofTransaction);
         console.log("NeedRefund value :",NeedRefund, " Refundnumber include :",Refundnumber.includes(NeedRefund), " index value :"),Refundnumber.indexOf(NeedRefund);
         if (Refundnumber.includes(NeedRefund)=== true && TRSResult.status === "Captured") {
             console.log("Transaction refunded :", TRS.PaymentId);
@@ -93,6 +93,7 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
         console.log("Number of refund left :", Refundnumber.length);
         console.log("Transaction ok :", TRSResult.approved, "Transaction Status :", TRSResult.status);
         transactionBatch.splice(Randomtransaction, 1);
+        waitfor.delay(waitTime);
     }
 
 }

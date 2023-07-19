@@ -104,7 +104,6 @@ router.post('/GetNewBatch', async function (req, res, next) {
             .status(200)
             .json(batchresult);
     } catch (err) {
-        //console.log(err.name);
         console.log(err);
         res
             .status(500)
