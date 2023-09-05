@@ -12,6 +12,7 @@ const Multibanco = require('.././Controller/Headless/Headless.Multibanco');
 const Giropay = require('.././Controller/Headless/Headless.Giropay');
 const P24 = require('.././Controller/Headless/Headless.P24');
 const Issuing = require('.././Controller/CKO/CKO.issuing');
+const AuthStandalone = require('.././Controller/CKO/CKO.AuthStandalone');
 
 router.post('/3DS', async function (req, res, next) {
     console.log('Got url:', req.url);
@@ -103,6 +104,21 @@ router.post('/GetNewBatch', async function (req, res, next) {
         res
             .status(200)
             .json(batchresult);
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+}),
+
+router.post('/CreateSessionStandalone', async function (req, res, next) {
+    console.log("Got body :", req.body)
+    try {
+        CreateAuth = await AuthStandalone.RequestSession(req.body.CardNumber, req.body.preferred_scheme, req.body.amount, req.body.orderReference, req.body.cvv, req.body.currency, req.body.paymenttype, req.body.description, req.body.completiontype)
+        res
+            .status(200)
+            .json(CreateAuth);
     } catch (err) {
         console.log(err);
         res

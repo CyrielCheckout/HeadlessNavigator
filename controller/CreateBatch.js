@@ -17,7 +17,7 @@ const { ConsoleMessage } = require('puppeteer');
 
 async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution, waitTime, headless, PayPalTRS, numberIdealTRS, numberBancontactTRS, numberGiropayTRS, numberMultiBancoTRS, CurrencyList, RefundRate) {
     if (waitTime <= 100) {
-        throw new Error('The wait time must be greater than 100.');
+        throw new Error('The wait time must be greater than 100 ms');
     };
     const transactionBatch = TRSList.generateTransactionArray(acceptanceRate, numberofTransaction, schemeDistribution, PayPalTRS, numberIdealTRS, numberBancontactTRS, numberGiropayTRS, numberMultiBancoTRS, CurrencyList, RefundRate);
     console.log("Nombre de transaction :", transactionBatch.length);
@@ -26,10 +26,8 @@ async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution,
         Refundnumber.push(Math.round(Math.random() * numberofTransaction));
     };
     console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction , " transactions");
-    lengthtable = transactionBatch.length;
-    //console.log(transactionBatch);
     a = 0
-    for (let i = 0; i < lengthtable; i++) {
+    for (let i = 0; i < transactionBatch.length; i++) {
         Randomtransaction = Math.floor(Math.random() * transactionBatch.length);
         TRSamount = AleatData.orderAmount();
         TRSOrderRef = "Node_JS_" + AleatData.orderRef();
