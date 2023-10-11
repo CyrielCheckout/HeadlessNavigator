@@ -4,8 +4,15 @@ var random_name = require('node-random-name');
 var randomEmail = require('random-email');
 var randomip = require('random-ip');
 
-async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, captureauto, paymenttype, description) {
+async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, captureauto, paymenttype, description, threeDSType, SessionID) {
     console.log("TRS :",CardNumber, "Scheme :", preferred_scheme, "Amount :", amount, "OrderRef :",orderReference, "CVV :",cvv, "Currency :", currency);
+    if (threeDSType === "StandaloneSessionID" ){
+        ThreeDSsource = { enabled: true, authentication_id: SessionID}
+        console.log(ThreeDSsource)
+    }
+    else {
+        ThreeDSsource = { enabled: true}
+    }
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
     if (preferred_scheme === "amex"){
@@ -26,9 +33,7 @@ async function MakeAuthorization(CardNumber, preferred_scheme, amount, orderRefe
         //capture_on: capturedate,
         payment_type: paymenttype,
         description: description,
-        "3ds": {
-            enabled: false
-        },
+        "3ds": ThreeDSsource,
         payment_ip : randomip('0.0.0.0', 16,24),
         customer: {
             //id: CustomerID,
@@ -57,9 +62,7 @@ else {transaction = await CKO.payments.request({
     processing: {
         preferred_scheme: preferred_scheme
     },
-    "3ds": {
-        enabled: true
-    },
+    "3ds": ThreeDSsource,
     payment_ip : randomip('192.168.2.0', 24),
     customer: {
         //id: CustomerID,

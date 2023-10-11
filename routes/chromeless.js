@@ -13,6 +13,7 @@ const Giropay = require('.././Controller/Headless/Headless.Giropay');
 const P24 = require('.././Controller/Headless/Headless.P24');
 const Issuing = require('.././Controller/CKO/CKO.issuing');
 const AuthStandalone = require('.././Controller/CKO/CKO.AuthStandalone');
+const Standalone3DSflow = require ("../controller/Workflow/Perform_a_standalone_authentication")
 
 router.post('/3DS', async function (req, res, next) {
     console.log('Got url:', req.url);
@@ -115,7 +116,22 @@ router.post('/GetNewBatch', async function (req, res, next) {
 router.post('/CreateSessionStandalone', async function (req, res, next) {
     console.log("Got body :", req.body)
     try {
-        CreateAuth = await AuthStandalone.RequestSession(req.body.CardNumber, req.body.preferred_scheme, req.body.amount, req.body.orderReference, req.body.cvv, req.body.currency, req.body.paymenttype, req.body.description, req.body.completiontype)
+        CreateAuth = await AuthStandalone.RequestSession(req.body.CardNumber, req.body.preferred_scheme, req.body.amount, req.body.orderReference, req.body.cvv, req.body.currency, req.body.paymenttype,req.body.authentication_category,req.body.challengeindicator, req.body.description, req.body.completiontype, req.body.headless, req.body.autoRun)
+        res
+            .status(200)
+            .json(CreateAuth);
+    } catch (err) {
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+}),
+
+router.post('/PerformStandaloneAuthentication', async function (req, res, next) {
+    console.log("Got body :", req.body)
+    try {
+        CreateAuth = await Standalone3DSflow.Init3DSSession(req.body.CardNumber, req.body.preferred_scheme, req.body.amount, req.body.orderReference, req.body.cvv, req.body.currency, req.body.paymenttype,req.body.authentication_category,req.body.challengeindicator, req.body.description, req.body.completiontype, req.body.headless, req.body.autoRun)
         res
             .status(200)
             .json(CreateAuth);

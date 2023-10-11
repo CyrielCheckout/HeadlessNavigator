@@ -27,8 +27,11 @@ async function HeadlessPayPal(redirectionURL, headlessStatus) {
         await browser.close();
         return {"httpstatus":200, "Status": "success" };
     } catch (err) {
+        await browser.close();
         console.log(err);
         return {"httpstatus":500, "Status": err };
     }
+
+
 };
 module.exports = { HeadlessPayPal };
