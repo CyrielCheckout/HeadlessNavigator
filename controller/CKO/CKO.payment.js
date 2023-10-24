@@ -55,7 +55,7 @@ else {transaction = await CKO.payments.request({
     reference: orderReference,
     capture: captureauto,
     success_url : "https://google.fr",
-    failure_url : "https://google.fr",
+        failure_url : "https://google.fr",
     //capture_on: capturedate,
     payment_type: paymenttype,
     description: description,
