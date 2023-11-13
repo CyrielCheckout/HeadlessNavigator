@@ -14,6 +14,7 @@ const P24 = require('.././Controller/Headless/Headless.P24');
 const Issuing = require('.././Controller/CKO/CKO.issuing');
 const AuthStandalone = require('.././Controller/CKO/CKO.AuthStandalone');
 const Standalone3DSflow = require ("../controller/Workflow/Perform_a_standalone_authentication")
+const CATCreateMerchant = require ("../controller/Cat_API/CAT.CreationBatch")
 
 router.post('/3DS', async function (req, res, next) {
     console.log('Got url:', req.url);
@@ -143,6 +144,21 @@ router.post('/PerformStandaloneAuthentication', async function (req, res, next) 
     }
 }),
 
+router.post('/CATCreateMerchant', async function (req, res, next) {
+    console.log("Got body :", req.body)
+    try {
+        CreateMerchantCAT = await CATCreateMerchant.Createconf(req.body)
+        res
+            .status(200)
+            .json(CreateMerchantCAT);
+    } catch (err) {
+        //console.log(err.name);
+        console.log(err);
+        res
+            .status(500)
+            .json(err);
+    }
+}),
 router.post('/test', async function (req, res, next) {
     console.log("Got body :", req.body)
     try {
