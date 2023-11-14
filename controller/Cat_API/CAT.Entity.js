@@ -2,6 +2,7 @@ const axios = require('axios');
 const baseURL = "https://client-admin.cko-sbox.ckotech.co/";
 
 async function GetAllEntity(bearer, ClientId) {
+  try{
   GetAllEntityfunc = await axios({
     method: 'get',
     url: baseURL + 'api/clients/' + ClientId + '/entities',
@@ -25,10 +26,12 @@ async function GetAllEntity(bearer, ClientId) {
     });
 
   return GetAllEntityfunc;
+}catch (err){throw err}
 }
 
 async function CreateEntity(bearer, ClientId, EntityName) {
-  CreateEntityfunc = await axios({
+  try{
+    CreateEntityfunc = await axios({
     method: 'post',
     url: baseURL + 'api/clients/' + ClientId + '/entities',
     headers: {
@@ -72,12 +75,14 @@ async function CreateEntity(bearer, ClientId, EntityName) {
     }
   })
     .then(function (response) {
-      return { Status: response.status, body: response.data }
+      return response
     });
 
   return CreateEntityfunc;
+}catch (err){throw err}
 }
 async function GetEntityDetails(bearer,EntityId) {
+  try{
   GetEntityDetailsfunc = await axios({
     method: 'get',
     url: baseURL + 'api/processing-channels/configuration?entityId=' + EntityId,
@@ -97,9 +102,10 @@ async function GetEntityDetails(bearer,EntityId) {
     },
   })
     .then(function (response) {
-      return { Status: response.status, body: response.data }
+      return response
     });
     return GetEntityDetailsfunc;
+  }catch (err){throw err}
 }
 
 module.exports = {

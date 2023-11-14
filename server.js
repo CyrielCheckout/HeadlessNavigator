@@ -5,7 +5,8 @@ require('dotenv').config();
 var createError = require('http-errors');
 var path = require('path');
 var indexRouter = require('./routes/index');
-var disputesRouter = require('./routes/chromeless');
+var MainRouter = require('./routes/chromeless');
+var CatAPIRouter = require('./routes/CATAPI_Router');
 const cors = require('cors');
 var morgan = require('morgan');
 
@@ -20,12 +21,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/chromeless', disputesRouter);
+app.use('/chromeless', MainRouter);
+app.use('/CatAPI', CatAPIRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
     next(createError(404));
 });
+
+
 
 // error handler
 app.use(function(err, req, res, next) {
