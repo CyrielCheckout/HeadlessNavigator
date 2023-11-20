@@ -22,6 +22,15 @@ async function Createconf(body) {
       finalresult.Entity[i]['VaultID'] = VaultID;
       waitfor.delay(body.delay);
       console.log("Vault ID", VaultID);
+      //Create Pricing Profile
+      try {
+        console.log("Create Pricing Profile")
+        GetPricingProfile = await CATEntity.Create_Pricing_Profile(body.Bearer, EntityID, body.Entity[i].EntityName);
+        finalresult.Entity[i].Pricing_Profile_ID = GetPricingProfile.data.id;
+      }
+      catch (err) {
+        finalresult.Entity[i].Pricing_Profile_ID = err.data;
+      }
       console.log("Number of processing channels for the entity", EntityID, " :", body.Entity[i].Processing_channel.length);
       finalresult.Entity[i].Processing_Channel = []
       for (let e = 0; e < body.Entity[i].Processing_channel.length; e++) {

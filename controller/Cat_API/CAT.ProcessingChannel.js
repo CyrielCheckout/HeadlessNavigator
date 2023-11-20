@@ -1269,6 +1269,8 @@ async function Create_Session_processor_CB(bearer, ProcessingChannelId, PPCartes
   catch (err){throw err}
 }
 
+
+
 module.exports = {
   GetAllProcessingChannels,
   CreateProcessingChannel,
@@ -1290,6 +1292,5 @@ module.exports = {
   Create_Session_Processing_Channels,
   Create_Session_processor_Visa,
   Create_Session_processor_Mastercard,
-  Create_Session_processor_CB
-
+  Create_Session_processor_CB,
 }
