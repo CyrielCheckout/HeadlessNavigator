@@ -22,11 +22,16 @@ async function GetAllEntity(bearer, ClientId) {
       }
     })
       .then(function (response) {
-        return { Status: response.status, body: response.data }
+        return { status: response.status, body: response.data }
       });
-
     return GetAllEntityfunc;
-  } catch (err) { throw err }
+  } catch (err) { 
+    if (err?.response?.status) {
+      if (err.response.status === 400) {
+        return { "status": 404, "Message": "Merchant not found" }
+      }}
+    throw err 
+  }
 }
 
 async function CreateEntity(bearer, ClientId, EntityName) {
