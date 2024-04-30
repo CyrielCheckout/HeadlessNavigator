@@ -1,9 +1,9 @@
 var express = require('express');
 require('dotenv').config();
 var router = express.Router();
-const CreateBatch = require('.././Controller/CreateBatch');
-const CheckPCAv = require('.././Controller/createTransactionList');
-const Headless3DS = require('.././Controller/Headless/Headless.3DS');
+const CreateBatch = require('.././controller/CreateBatch');
+const CheckPCAv = require('.././controller/createTransactionList');
+const Headless3DS = require('.././controller/Headless/Headless.3DS');
 const PayPal = require('.././Controller/Headless/Headless.PayPal');
 const Bancontact = require('.././Controller/Headless/Headless.Bancontact');
 const Sofort = require('.././Controller/Headless/Headless.Sofort');
