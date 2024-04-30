@@ -1,8 +1,6 @@
 const CKO = require('./CKO.connect');
 const IdempotencyKeygen = require('../IdempotencyKey');
-var random_name = require('node-random-name');
-var randomEmail = require('random-email');
-var randomip = require('random-ip');
+const { faker } = require('@faker-js/faker');
 
 // Request CKO 3DS session
 async function RequestSession(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, paymenttype, authentication_category, challengeindicator, description, completiontype) {
@@ -32,12 +30,12 @@ async function RequestSession(CardNumber, preferred_scheme, amount, orderReferen
         },
         shipping_address: {
             
-                address_line1: "20 bis rue la Fayette",
-                address_line2: "20 bis rue la Fayette",
-                city: "Paris",
-                state: "",
-                zip: "75000",
-                country: "FR"
+                address_line1: faker.location.street(),
+                address_line2:  faker.location.streetAddress(false),
+                city: faker.location.city(),
+                state: faker.location.state({ abbreviated: true }),
+                zip: faker.location.zipCode(),
+                country: faker.location.countryCode('alpha-2')
             },
         shipping_address_matches_billing: true,
         channel_data: {
@@ -49,9 +47,9 @@ async function RequestSession(CardNumber, preferred_scheme, amount, orderReferen
             screen_height: 1080,
             screen_width: 1920,
             timezone: 60,
-            user_agent: "test",
+            user_agent: faker.internet.userAgent(),
             three_ds_method_completion: "U",
-            ip_address: randomip('192.168.2.0', 24)
+            ip_address: faker.internet.ipv4()
         },
         account_info: {
             purchase_count: 999,
@@ -63,39 +61,39 @@ async function RequestSession(CardNumber, preferred_scheme, amount, orderReferen
             transactions_today: 10,
             authentication_method: "no_authentication",
             cardholder_account_age_indicator: "no_account",
-        account_change: "2019-08-24T14:15:22Z",
+        account_change: faker.date.past(),
     account_change_indicator: "this_transaction",
-        account_date: "2019-08-24T14:15:22Z",
-        account_password_change: "2019-08-24T14:15:22Z",
+        account_date: faker.date.past(),
+        account_password_change: faker.date.past(),
         account_password_change_indicator: "no_change",
         transactions_per_year: 2,
-        payment_account_age: "2019-08-24T14:15:22Z",
-        shipping_address_usage: "2019-08-24T14:15:22Z",
+        payment_account_age: faker.date.past(),
+        shipping_address_usage: faker.date.past(),
         account_type: "not_applicable",
         account_id: "string",
         three_ds_requestor_authentication_info: {
             three_ds_req_auth_method: "no_threeds_requestor_authentication_occurred",
-            three_ds_req_auth_timestamp: "2019-08-24T14:15:22Z",
+            three_ds_req_auth_timestamp: faker.date.past(),
             three_ds_req_auth_data: "string"
         }
         },
         merchant_risk_info: {
-            delivery_email: randomEmail({ domain: 'gmail.com' }),
+            delivery_email: faker.internet.email({allowSpecialCharacters: true }),
             delivery_timeframe: "electronic_delivery",
             is_preorder: true,
             is_reorder: false,
             shipping_indicator: "billing_address",
             reorder_items_indicator: "first_time_ordered",
         pre_order_purchase_indicator: "merchandise_available",
-        pre_order_date: "2019-08-24T14:15:22Z",
-        gift_card_amount: 123,
+        pre_order_date: faker.date.past(),
+        gift_card_amount: faker.finance.amount({ dec: 0}),
         gift_card_currency: "USD",
         gift_card_count: "04"
         },
         initial_transaction: {
             acs_transaction_id: "fa5b4ed1-9919-4357-8cb4-ffc003d53eb7",
             authentication_method: "frictionless_authentication",
-            authentication_timestamp: "2023-02-06T15:00:00.000Z",
+            authentication_timestamp: faker.date.past(),
             authentication_data: "string",
             //initial_session_id: "sid_p6prbhogijnuxgv4grm3ber55u"
         }, 

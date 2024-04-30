@@ -1,5 +1,6 @@
 const TRSList = require('./createTransactionList');
 const CKOpayment = require('./CKO/CKO.payment');
+const CKOpaymentXPay = require('./CKO/CKO.XPay');
 const CKOpaymentPayPal = require('./CKO/CKO.payment.PayPal');
 const CKOpaymentIdeal = require('./CKO/CKO.payment.Ideal');
 const CKOpaymentBancontact = require('./CKO/CKO.payment.Bancontact');
@@ -14,86 +15,176 @@ const Bancontact = require('.././Controller/Headless/Headless.Bancontact');
 const GiroPay = require('.././Controller/Headless/Headless.Giropay');
 const Multibanco = require('.././Controller/Headless/Headless.Multibanco');
 const { ConsoleMessage } = require('puppeteer');
+const { faker } = require('@faker-js/faker');
 
-async function TRSBatch(acceptanceRate, numberofTransaction, schemeDistribution, waitTime, headless, PayPalTRS, numberIdealTRS, numberBancontactTRS, numberGiropayTRS, numberMultiBancoTRS, CurrencyList, RefundRate) {
-    if (waitTime <= 100) {
-        throw new Error('The wait time must be greater than 100 ms');
-    };
-    const transactionBatch = TRSList.generateTransactionArray(acceptanceRate, numberofTransaction, schemeDistribution, PayPalTRS, numberIdealTRS, numberBancontactTRS, numberGiropayTRS, numberMultiBancoTRS, CurrencyList, RefundRate);
+async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, waitTime, headless, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, processing_channel_id) {
+    const transactionBatch = TRSList.generateTransactionArray(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, processing_channel_id);
     console.log("Nombre de transaction :", transactionBatch.length);
     Refundnumber = [];
-    for (let i = 0; i < Math.round((RefundRate * (numberofTransaction + PayPalTRS + numberIdealTRS + numberBancontactTRS + numberGiropayTRS + numberMultiBancoTRS)) / 100); i++) {
+    for (let i = 0; i < Math.round((RefundRate * (numberofTransaction)) / 100); i++) {
         Refundnumber.push(Math.round(Math.random() * numberofTransaction));
     };
-    console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction , " transactions");
+    console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction, " transactions");
     a = 0
     for (let i = 0; i < transactionBatch.length; i++) {
         Randomtransaction = Math.floor(Math.random() * transactionBatch.length);
-        TRSamount = AleatData.orderAmount();
         TRSOrderRef = "Node_JS_" + AleatData.orderRef();
         if (transactionBatch[Randomtransaction].PaymentMethod === "Card") {
-            if (transactionBatch[Randomtransaction].Scheme === "amex") { cvv = 1000; prefScheme = "amex"; } else { cvv = 100; prefScheme = transactionBatch[Randomtransaction].Scheme; }
+            console.log("Card Payment")
             try {
-                TRS = await CKOpayment.MakeAuthorization(transactionBatch[Randomtransaction].CardNumber, prefScheme, TRSamount, TRSOrderRef, cvv, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch");
+                TRS = await CKOpayment.CardPayment(transactionBatch[Randomtransaction].CardNumber, transactionBatch[Randomtransaction].Scheme, faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch", transactionBatch[Randomtransaction].Processing_Channel_ID);
                 console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        headlessrun = await Headless3DS.Headless3DS(TRS.RedirectionURL, headless, "www.google.fr");
+                    }
+                    catch (err) {
+                        console.log("Error for Card Headless:", err)
+                    }
+                }
             } catch (err) {
-                console.log(err)
-            }
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await Headless3DS.Headless3DS(TRS.RedirectionURL, headless, "www.google.fr");
+                console.log("Error for Card Payment:", err)
             }
         }
         if (transactionBatch[Randomtransaction].PaymentMethod === "PayPal") {
-            TRS = await CKOpaymentPayPal.PayPalPayment(TRSamount, TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test");
-            console.log(TRS);
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await PayPal.HeadlessPayPal(TRS.RedirectionURL, headless);
+            try {
+                console.log("PayPal Payment")
+                TRS = await CKOpaymentPayPal.PayPalPayment(faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        headlessrun = await PayPal.HeadlessPayPal(TRS.RedirectionURL, headless);
+                    }
+                    catch (err) {
+                        console.log("Error for PayPal Headless:", err)
+                    }
+                }
+            }
+            catch (err) {
+                console.log("Error for PayPal Payment:", err)
+            }
+        }
+        if (transactionBatch[Randomtransaction].PaymentMethod === "ApplePay") {
+            console.log("ApplePay Payment");
+            try {
+                TRS = await CKOpaymentXPay.ApplePay(transactionBatch[Randomtransaction].CardNumber, faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+            }
+            catch (err) {
+                console.log("Error for ApplePay Payment:", err)
+            }
+        }
+        if (transactionBatch[Randomtransaction].PaymentMethod === "GooglePay") {
+            console.log("GooglePay Payment");
+            try {
+                TRS = await CKOpaymentXPay.GooglePay(transactionBatch[Randomtransaction].CardNumber, faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+            }
+            catch (err) {
+                console.log("Error for GooglePay Payment:", err)
             }
         }
         if (transactionBatch[Randomtransaction].PaymentMethod === "Ideal") {
-            TRS = await CKOpaymentIdeal.IdealPayment(TRSamount, TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test");
-            console.log(TRS);
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await Ideal.HeadlessIdeal(TRS.RedirectionURL, headless);
+            try {
+                TRS = await CKOpaymentIdeal.IdealPayment(transactionBatch[Randomtransaction].amount || faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        headlessrun = await Ideal.HeadlessIdeal(TRS.RedirectionURL, headless);
+                    }
+                    catch (err) {
+                        console.log("Error for Ideal Headless:", err)
+                    }
+                }
+            }
+            catch (err) {
+                console.log("Error for Ideal Payment:", err)
             }
         }
         if (transactionBatch[Randomtransaction].PaymentMethod === "Bancontact") {
-            TRS = await CKOpaymentBancontact.BancontactPayment(TRSamount, TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test");
-            console.log(TRS);
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await Bancontact.HeadlessBancontact(TRS.RedirectionURL, headless);
+            console.log("Bancontact Payment")
+            try {
+                TRS = await CKOpaymentBancontact.BancontactPayment(faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        if (transactionBatch[Randomtransaction].Status === "Accepted") {
+                            headlessrun = await Bancontact.HeadlessBancontactAccepted(TRS.RedirectionURL, headless);
+                        }
+                        else {
+                            headlessrun = await Bancontact.HeadlessBancontactRefused(TRS.RedirectionURL, headless);
+                        }
+                    }
+                    catch (err) {
+                        console.log("Error for Bancontact Headless:", err)
+                    }
+                }
+            }
+            catch (err) {
+                console.log("Error for Bancontact Payment:", err)
             }
         }
         if (transactionBatch[Randomtransaction].PaymentMethod === "Giropay") {
-            TRS = await CKOpaymentGiropay.GiropayPayment(TRSamount, TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test");
-            console.log(TRS);
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await GiroPay.HeadlessGiropay(TRS.RedirectionURL, headless);
+            console.log("Giropay Payment");
+            try {
+                TRS = await CKOpaymentGiropay.GiropayPayment(faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        headlessrun = await GiroPay.HeadlessGiropay(TRS.RedirectionURL, headless);
+                    }
+                    catch (err) {
+                        console.log("Error for Giropay Headless:", err)
+                    }
+                }
+            }
+            catch (err) {
+                console.log("Error for Giropay Payment:", err)
             }
         }
         if (transactionBatch[Randomtransaction].PaymentMethod === "Multibanco") {
-            TRS = await CKOpaymentMultibanco.MultibancoPayment(TRSamount, TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test");
-            console.log(TRS);
-            if (TRS.requiresRedirect === true) {
-                headlessrun = await Multibanco.HeadlessMultibanco(TRS.RedirectionURL, headless);
+            console.log("Multibanco Payment")
+            try {
+                TRS = await CKOpaymentMultibanco.MultibancoPayment(faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, true, "Regular", "Test", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                console.log(TRS);
+                if (TRS.requiresRedirect === true) {
+                    try {
+                        headlessrun = await Multibanco.HeadlessMultibanco(TRS.RedirectionURL, headless);
+                    }
+                    catch (err) {
+                        console.log("Error for Multibanco Headless:", err);
+                    }
+                }
+            }
+            catch (err) {
+                console.log("Error for Multibanco Headless:", err.http_code, "Error message:", err.body)
             }
         }
-        TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
-        NeedRefund = Math.floor(Math.random() * numberofTransaction);
-        console.log("NeedRefund value :",NeedRefund, " Refundnumber include :",Refundnumber.includes(NeedRefund), " index value :"),Refundnumber.indexOf(NeedRefund);
-        if (Refundnumber.includes(NeedRefund)=== true && TRSResult.status === "Captured") {
-            console.log("Transaction refunded :", TRS.PaymentId);
-            TRSRefund = await CKOpayment.Refund(TRS.PaymentId);
+        try {
             TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
-            var index = Refundnumber.indexOf(NeedRefund);
-            Refundnumber.splice(index, 1);
+            if (transactionBatch[Randomtransaction].Refund === true && TRSResult.status === "Captured") {
+                console.log("Transaction refunded :", TRS.PaymentId);
+                try {
+                    TRSRefund = await CKOpayment.Refund(TRS.PaymentId);
+                    try {
+                        TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
+                    }
+                    catch (err) {
+                        console.log("Error for GetPaymentDetails :", TRS.PaymentId, "error reason:", err)
+                    }
+                }
+                catch (err) {
+                    console.log("Error for refund payment:", TRS.PaymentId, "error reason:", err)
+                }
+            }
+            console.log("Transaction ok :", TRSResult.approved, "Transaction Status :", TRSResult.status);
+            transactionBatch.splice(Randomtransaction, 1);
+            waitfor.delay(waitTime);
         }
-        console.log("Number of refund left :", Refundnumber.length);
-        console.log("Transaction ok :", TRSResult.approved, "Transaction Status :", TRSResult.status);
-        transactionBatch.splice(Randomtransaction, 1);
-        waitfor.delay(waitTime);
+        catch (err) {
+            console.log("Error:", err)
+        }
     }
-
 }
 
 module.exports = { TRSBatch }

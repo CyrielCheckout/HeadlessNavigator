@@ -1,18 +1,16 @@
 const CKO = require('./CKO.connect');
 const IdempotencyKeygen = require('../IdempotencyKey');
-var random_name = require('node-random-name');
-var randomEmail = require('random-email');
-var randomip = require('random-ip');
+const { faker } = require('@faker-js/faker');
 
-async function MultibancoPayment(amount, orderReference, currency, captureauto, paymenttype, description) {
+async function MultibancoPayment(amount, orderReference, currency, captureauto, paymenttype, description, Processing_Channel_ID) {
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
     transaction = await CKO.payments.request({
         source: {
             type: 'multibanco',
-            account_holder_name: random_name(),
-            payment_country : "PT",
-            billing_descriptor : "CKO NODE JS TEST"
+            account_holder_name: faker.person.fullName(),
+            payment_country: "PT",
+            billing_descriptor: "CKO NODE JS TEST"
         },
         currency: currency,
         amount: amount,
@@ -21,42 +19,45 @@ async function MultibancoPayment(amount, orderReference, currency, captureauto, 
         //capture_on: capturedate,
         payment_type: paymenttype,
         description: description,
-        payment_ip : randomip('192.168.2.0', 24),
+        payment_ip: faker.internet.ipv4(),
         customer: {
             //id: CustomerID,
-            email: randomEmail({ domain: 'gmail.com' }),
-            name: random_name()
+            email: faker.internet.email({ allowSpecialCharacters: true }),
+            name: faker.person.fullName()
         },
-        billing_descriptor : {
-            name : "CKO NODE JS TEST",
-            city : "AixEnProvence"
+        billing_descriptor: {
+            name: "CKO NODE JS TEST",
+            city: "AixEnProvence"
         },
         shipping: {
             address: {
-                address_line1: "20 bis rue la Fayette",
-                address_line2: "20 bis rue la Fayette",
-                city: "Paris",
-                state: "",
-                zip: "75000",
-                country: "FR"
+                address_line1: faker.location.street(),
+                address_line2: faker.location.streetAddress(false),
+                city: faker.location.city(),
+                state: faker.location.state({ abbreviated: true }),
+                zip: faker.location.zipCode(),
+                country: faker.location.countryCode('alpha-2')
             },
             phone: {
                 country_code: "+33",
-                number: "0606060606"
+                number: faker.string.numeric({ length: { min: 10, max: 10 } })
             }
         },
         previous_payment_id: null,
         risk: {
             enabled: true
         },
+        success_url: "https://google.fr",
+        failure_url: "https://google.fr",
         recipient: {
             dob: "1995-05-31",
             account_number: "5555554444",
-            zip: "W1T",
-            last_name: random_name(),
-            first_name: random_name(),
-            country: "FR"
+            zip: faker.location.zipCode(),
+            last_name: faker.person.lastName(),
+            first_name: faker.person.middleName(),
+            country: faker.location.countryCode('alpha-2')
         },
+        processing_channel_id: Processing_Channel_ID,
         metadata: {
             "headless": false,
             "autoRun": true
@@ -67,7 +68,7 @@ async function MultibancoPayment(amount, orderReference, currency, captureauto, 
         return { "requiresRedirect": transaction.requiresRedirect, "PaymentId": transaction.id, "TransactionStatus": transaction.status, "RedirectionURL": transaction._links.redirect.href }
     }
     else {
-        return { "requiresRedirect": transaction.requiresRedirect, "TransactionStatus": transaction.status,"PaymentId": transaction.id }
+        return { "requiresRedirect": transaction.requiresRedirect, "TransactionStatus": transaction.status, "PaymentId": transaction.id }
     }
 };
 

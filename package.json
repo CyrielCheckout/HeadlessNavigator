@@ -16,5 +16,8 @@
         "puppeteer-autoscroll-down": "^1.1.1",
         "random-email": "^1.0.3",
         "random-ip": "^0.0.1"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^8.4.1"
     }
 }

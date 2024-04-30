@@ -1,19 +1,13 @@
 const CKO = require('./CKO.connect');
 const IdempotencyKeygen = require('../IdempotencyKey');
-var random_name = require('node-random-name');
-var randomEmail = require('random-email');
-var randomip = require('random-ip');
+const { faker } = require('@faker-js/faker');
 
-async function PayPalPayment(amount, orderReference, currency, captureauto, paymenttype, description) {
+async function PayPalPayment(amount, orderReference, currency, captureauto, paymenttype, description,Processing_Channel_ID) {
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
     transaction = await CKO.payments.request({
         source: {
-            type: 'paypal',
-            invoice_number: orderReference,
-            recipient_name: random_name,
-            logo_url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/2560px-Google_2015_logo.svg.png",
-            brand_name: "Test PayPal"
+            "type": "paypal"
         },
         items : [
             {
@@ -25,15 +19,18 @@ async function PayPalPayment(amount, orderReference, currency, captureauto, paym
         currency: currency,
         amount: amount,
         reference: orderReference,
+        //processing_channel_id: Processing_Channel_ID,
         capture: captureauto,
         //capture_on: capturedate,
         payment_type: paymenttype,
+        success_url : "https://google.fr",
+        failure_url : "https://google.fr",
         description: description,
-        payment_ip : randomip('192.168.2.0', 24),
+        payment_ip : faker.internet.ipv4(),
         customer: {
             //id: CustomerID,
-            email: randomEmail({ domain: 'gmail.com' }),
-            name: random_name
+            email: faker.internet.email({ allowSpecialCharacters: true }),
+            name: faker.person.fullName()
         }
     }, IdempotencyKeygenerated);
     //console.log(transaction.status);
