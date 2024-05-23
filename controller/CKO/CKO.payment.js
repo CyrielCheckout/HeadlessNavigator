@@ -2,8 +2,8 @@ const CKO = require('./CKO.connect');
 const IdempotencyKeygen = require('../IdempotencyKey');
 const { faker } = require('@faker-js/faker');
 
-async function CardPayment(CardNumber, preferred_scheme, amount, orderReference, currency, captureauto, paymenttype, description, Processing_Channel_ID, threeDSType, SessionID) {
-    console.log("TRS :", CardNumber, "Scheme :", preferred_scheme, "Amount :", amount, "OrderRef :", orderReference, "Currency :", currency);
+async function CardPayment(CardNumber, preferred_scheme, amount, orderReference, currency, captureauto, paymenttype, description, Disputes ,Processing_Channel_ID, threeDSType, SessionID) {
+    console.log("TRS :", CardNumber, "Scheme :", preferred_scheme, "Amount :", amount, "OrderRef :", orderReference, "Currency :", currency, "Disputes :",Disputes);
     if (threeDSType === "StandaloneSessionID") {
         ThreeDSsource = { enabled: true, authentication_id: SessionID }
         console.log(ThreeDSsource)
@@ -21,14 +21,26 @@ async function CardPayment(CardNumber, preferred_scheme, amount, orderReference,
             preferred_scheme: preferred_scheme
         };
     }
+    if (Disputes === true) {
+        amountDisputes = [1042,1312,4857,4861,105,1311,4837,4856,104,131,4855,486,1043,1313,4858,4862,1314,1044,4859,4863,1045,1315,485,4864,1046,1316,4851,4865,1047,1317,4852,4866,1049,1319,4854,4868,1048,1318,4853,4867];
+        amountDisputesChoice = faker.number.int({ max: amountDisputes.length - 1 });
+        amount = amountDisputes[amountDisputesChoice];
+        currency = "GBP";
+        expiry_month =1;
+        expiry_year = 2099;
+    }
+    else {
+        expiry_month =1;
+        expiry_year = 2027;
+    }
     var transaction;
     IdempotencyKeygenerated = IdempotencyKeygen.IdempotencyKey();
     transaction = await CKO.payments.request({
         source: {
             type: 'card',
             number: CardNumber,
-            expiry_month: 6,
-            expiry_year: 2029,
+            expiry_month: expiry_month,
+            expiry_year: expiry_year,
             cvv: cvv,
             stored: faker.datatype.boolean(),
             store_for_future_use: faker.datatype.boolean(),

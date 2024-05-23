@@ -17,14 +17,8 @@ const Multibanco = require('.././Controller/Headless/Headless.Multibanco');
 const { ConsoleMessage } = require('puppeteer');
 const { faker } = require('@faker-js/faker');
 
-async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, waitTime, headless, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, processing_channel_id) {
-    const transactionBatch = TRSList.generateTransactionArray(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, processing_channel_id);
-    console.log("Nombre de transaction :", transactionBatch.length);
-    Refundnumber = [];
-    for (let i = 0; i < Math.round((RefundRate * (numberofTransaction)) / 100); i++) {
-        Refundnumber.push(Math.round(Math.random() * numberofTransaction));
-    };
-    console.log("Nombre de refund :", Refundnumber.length, " pour un total de :", numberofTransaction, " transactions");
+async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, waitTime, headless, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, DisputeRate, processing_channel_id) {
+    const transactionBatch = await TRSList.generateTransactionArray(acceptanceRate, numberofTransaction, CardRate, schemeDistribution, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, DisputeRate, processing_channel_id);
     a = 0
     for (let i = 0; i < transactionBatch.length; i++) {
         Randomtransaction = Math.floor(Math.random() * transactionBatch.length);
@@ -32,7 +26,7 @@ async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDis
         if (transactionBatch[Randomtransaction].PaymentMethod === "Card") {
             console.log("Card Payment")
             try {
-                TRS = await CKOpayment.CardPayment(transactionBatch[Randomtransaction].CardNumber, transactionBatch[Randomtransaction].Scheme, faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch", transactionBatch[Randomtransaction].Processing_Channel_ID);
+                TRS = await CKOpayment.CardPayment(transactionBatch[Randomtransaction].CardNumber, transactionBatch[Randomtransaction].Scheme, faker.finance.amount({ min: 1, max: 100000, dec: 0 }), TRSOrderRef, transactionBatch[Randomtransaction].Currency, "True", "Regular", "CKO demo batch",transactionBatch[Randomtransaction].Disputes, transactionBatch[Randomtransaction].Processing_Channel_ID);
                 console.log(TRS);
                 if (TRS.requiresRedirect === true) {
                     try {
@@ -163,11 +157,11 @@ async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDis
         try {
             TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
             if (transactionBatch[Randomtransaction].Refund === true && TRSResult.status === "Captured") {
-                console.log("Transaction refunded :", TRS.PaymentId);
                 try {
                     TRSRefund = await CKOpayment.Refund(TRS.PaymentId);
                     try {
                         TRSResult = await CKOpayment.getPaymentDetails(TRS.PaymentId);
+                        console.log("Transaction refunded :", TRS.PaymentId);
                     }
                     catch (err) {
                         console.log("Error for GetPaymentDetails :", TRS.PaymentId, "error reason:", err)
@@ -179,7 +173,9 @@ async function TRSBatch(acceptanceRate, numberofTransaction, CardRate, schemeDis
             }
             console.log("Transaction ok :", TRSResult.approved, "Transaction Status :", TRSResult.status);
             transactionBatch.splice(Randomtransaction, 1);
-            waitfor.delay(waitTime);
+            waitTimeRandom = faker.number.int({ min: waitTime.min, max: waitTime.max });
+            console.log(`Will wait for ${waitTimeRandom}ms`)
+            waitfor.delay(waitTimeRandom)//waitTime);
         }
         catch (err) {
             console.log("Error:", err)

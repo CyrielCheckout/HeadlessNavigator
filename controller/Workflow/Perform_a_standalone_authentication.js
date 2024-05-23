@@ -50,7 +50,7 @@ async function Init3DSSession(CardNumber, preferred_scheme, amount, orderReferen
         }
     }
     if (Sessionresult.status === "approved" || "attempted"){
-        TRS = await CKOpayment.MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, "True", paymenttype, "CKO demo batch", "pc_nhobb7sghexednann6wkztfkym","StandaloneSessionID",ResultRequestSession.SessionID);
+        TRS = await CKOpayment.MakeAuthorization(CardNumber, preferred_scheme, amount, orderReference, cvv, currency, "True", paymenttype, "CKO demo batch",false, "pc_nhobb7sghexednann6wkztfkym","StandaloneSessionID",ResultRequestSession.SessionID);
         console.log(TRS);
     }
 }

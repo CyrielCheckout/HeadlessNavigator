@@ -33,7 +33,7 @@ function GetOneProcessingChannelConfigured(ProcessingChannelCArray, PaymentMetho
     return Object.keys(ProcessingChannelCArray)[ChooseProcessingChannelID];
 }
 
-function generateTransactionArray(AcceptanceRate, numberofTransaction, CardRate, schemeDistribution, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, processing_channel_id) {
+function generateTransactionArray(AcceptanceRate, numberofTransaction, CardRate, schemeDistribution, PayPalRate, ApplePayRate, GooglePayRate, IdealRate, BancontactRate, GiropayRate, MultiBancoRate, CurrencyList, RefundRate, DisputeRate, processing_channel_id) {
     // Calculate the number of accepted transactions
     const numAccepted = Math.floor(numberofTransaction * AcceptanceRate / 100);
     console.log("number of accepted trs :", numAccepted)
@@ -75,23 +75,9 @@ function generateTransactionArray(AcceptanceRate, numberofTransaction, CardRate,
     const numGiropayRate = Math.round(numberofTransaction * (GiropayRate / 100));
     const numMultiBancoRate = Math.round(numberofTransaction * (MultiBancoRate / 100));
     const numRefundRate = Math.round(numAccepted * (RefundRate / 100));
+    const numDisputeRate = Math.round(numAccepted * (DisputeRate / 100));
+    console.log(`Somme des transactions après AR : ${numVisa+numMastercard+numCB+numAmex+numVisaRefused+numMastercardRefused+numCBRefused+numAmexRefused+numApplePayVisa+numApplePayMastercard+numApplePayCB+numApplePayAmex+numGooglePayVisa+numGooglePayMastercard+numGooglePayCB+numGooglePayAmex+numApplePayRefusedVisa+numApplePayRefusedMastercard+numApplePayRefusedCB+numApplePayRefusedAmex+numGooglePayRefusedVisa+numGooglePayRefusedMastercard+numGooglePayRefusedCB+numGooglePayRefusedAmex+numPayPalRate+numIdealRate+numIdealRefusedRate+numBancontactRate+numBancontactRefusedRate+numGiropayRate+numMultiBancoRate+numRefundRate+numDisputeRate}, vs requested number : ${numberofTransaction}, that mean there is a ${numberofTransaction - (numVisa+numMastercard+numCB+numAmex+numVisaRefused+numMastercardRefused+numCBRefused+numAmexRefused+numApplePayVisa+numApplePayMastercard+numApplePayCB+numApplePayAmex+numGooglePayVisa+numGooglePayMastercard+numGooglePayCB+numGooglePayAmex+numApplePayRefusedVisa+numApplePayRefusedMastercard+numApplePayRefusedCB+numApplePayRefusedAmex+numGooglePayRefusedVisa+numGooglePayRefusedMastercard+numGooglePayRefusedCB+numGooglePayRefusedAmex+numPayPalRate+numIdealRate+numIdealRefusedRate+numBancontactRate+numBancontactRefusedRate+numGiropayRate+numMultiBancoRate+numRefundRate+numDisputeRate)} difference`)
     console.log("Liste des currency :", CurrencyList);
-    console.log("number of Visa trs :", numVisa);
-    console.log("number of Mastercard trs :", numMastercard);
-    console.log("number of CB trs :", numCB);
-    console.log("number of Amex trs :", numAmex);
-    console.log("number of Visa refused trs :", numVisaRefused);
-    console.log("number of Mastercard refused trs :", numMastercardRefused);
-    console.log("number of CB refused trs :", numCBRefused);
-    console.log("number of Amex refused trs :", numVisaRefused);
-    console.log("number of PayPal trs :", PayPalRate);
-    console.log("number of Ideal trs :", IdealRate);
-    console.log("number of Bancontact trs :", BancontactRate);
-    console.log("number of Giropay trs :", GiropayRate);
-    console.log("number of Multibanco trs :", MultiBancoRate);
-    console.log("number of Card trs :", numAcceptedCard + numRefusedCard);
-    console.log("Somme de la repartition :", numVisa + numMastercard + numCB + numAmex + numVisaRefused + numMastercardRefused + numCBRefused + numVisaRefused);
-    console.log(`Refund rate is ${RefundRate}%, that represent ${numRefundRate} transactions`);
     let ResutArray = [];
     //Generate Visa transactions
     if (schemeDistribution["Visa"] > 0) {
@@ -334,9 +320,8 @@ function generateTransactionArray(AcceptanceRate, numberofTransaction, CardRate,
             ResutArray.push({ "PaymentMethod": "Multibanco", "CardNumber": "N/A", "Scheme": "N/A", "Status": "N/A", "Currency": "EUR", "Processing_Channel_ID": GetOneProcessingChannelConfigured(processing_channel_id, 'Multibanco') });
         }
     }
-
+    console.log(`Number of transactions : ${ResutArray.length}, number of refund ${numRefundRate}, number of disputes ${numDisputeRate}`);
     //add refund to transactions
-    console.log(`Number of transactions : ${ResutArray.length}, number of refund ${numRefundRate}`);
     for (let D = 0; D < ResutArray.length; D++) { ResutArray[D].Refund = false }
     for (let C = 1; C < numRefundRate; C++) {
         ChooseTRSRefund = faker.number.int({ max: ResutArray.length - 1 });
@@ -347,9 +332,321 @@ function generateTransactionArray(AcceptanceRate, numberofTransaction, CardRate,
             C--
         }
     }
-    for (let E = 0; E < ResutArray.length; E++) { if(ResutArray[E].Processing_Channel_ID !="pc_nhobb7sghexednann6wkztfkym" && ResutArray[E].Processing_Channel_ID != null){
-        console.log(ResutArray[E])
-    } }
-    return ResutArray;
+    //add disputes to transactions
+    for (let F = 0; F < ResutArray.length; F++) { ResutArray[F].Disputes = false }
+    for (let G = 1; G < numDisputeRate; G++) {
+        ChooseTRSDispute = faker.number.int({ max: ResutArray.length - 1 });
+        if (ResutArray[ChooseTRSDispute].Status === "Accepted" && ResutArray[ChooseTRSDispute].PaymentMethod === "Card" || ResutArray[ChooseTRSDispute].Status === "Accepted" && ResutArray[ChooseTRSDispute].PaymentMethod === "ApplePay" || ResutArray[ChooseTRSDispute].Status === "Accepted" && ResutArray[ChooseTRSDispute].PaymentMethod === "GooglePay") {
+            ResutArray[ChooseTRSDispute].Disputes = true
+        }
+        else {
+            G--
+        }
+    }
+
+    console.log(`Result array transaction count = ${ResutArray.length}`);
+    checkresult = {
+        total: {
+            Accepted: 0,
+            Refused: 0
+        },
+        Card: {
+            Visa: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Mastercard: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Amex: {
+                Accepted: 0,
+                Refused: 0
+            },
+            CB: {
+                Accepted: 0,
+                Refused: 0
+            }
+        },
+        ApplePay: {
+            Visa: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Mastercard: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Amex: {
+                Accepted: 0,
+                Refused: 0
+            },
+            CB: {
+                Accepted: 0,
+                Refused: 0
+            }
+        },
+        GooglePay: {
+            Visa: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Mastercard: {
+                Accepted: 0,
+                Refused: 0
+            },
+            Amex: {
+                Accepted: 0,
+                Refused: 0
+            },
+            CB: {
+                Accepted: 0,
+                Refused: 0
+            }
+        },
+        Ideal: {
+            Accepted: 0,
+            Refused: 0
+        },
+        Bancontact: {
+            Accepted: 0,
+            Refused: 0
+        },
+        Giropay: {
+            transactions: 0
+        },
+        PayPal: {
+            transactions: 0
+        },
+        Multibanco: {
+            transactions: 0
+        },
+        Refund: {
+            RefundNumber: 0
+        },
+        Disputes: {
+            DisputesNumber: 0
+        }
+    }
+    for (let Z = 0; Z < ResutArray.length; Z++) {
+        if (ResutArray[Z].Status === 'Accepted') {
+            checkresult.total.Accepted++;
+        }
+        else {
+            checkresult.total.Refused++;
+        }
+        if (ResutArray[Z].PaymentMethod === 'Card') {
+            if (ResutArray[Z].Scheme === 'visa') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.Card.Visa.Accepted++;
+                }
+                else {
+                    checkresult.Card.Visa.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'mastercard') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.Card.Mastercard.Accepted++;
+                }
+                else {
+                    checkresult.Card.Mastercard.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'amex') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.Card.Amex.Accepted++;
+                }
+                else {
+                    checkresult.Card.Amex.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'cartes_bancaires') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.Card.CB.Accepted++;
+                }
+                else {
+                    checkresult.Card.CB.Refused++;
+                }
+            }
+        }
+        if (ResutArray[Z].PaymentMethod === 'ApplePay') {
+            if (ResutArray[Z].Scheme === 'visa') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.ApplePay.Visa.Accepted++;
+                }
+                else {
+                    checkresult.ApplePay.Visa.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'mastercard') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.ApplePay.Mastercard.Accepted++;
+                }
+                else {
+                    checkresult.ApplePay.Mastercard.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'amex') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.ApplePay.Amex.Accepted++;
+                }
+                else {
+                    checkresult.ApplePay.Amex.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'cartes_bancaires') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.ApplePay.CB.Accepted++;
+                }
+                else {
+                    checkresult.ApplePay.CB.Refused++;
+                }
+            }
+        }
+        if (ResutArray[Z].PaymentMethod === 'GooglePay') {
+            if (ResutArray[Z].Scheme === 'visa') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.GooglePay.Visa.Accepted++;
+                }
+                else {
+                    checkresult.GooglePay.Visa.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'mastercard') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.GooglePay.Mastercard.Accepted++;
+                }
+                else {
+                    checkresult.GooglePay.Mastercard.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'amex') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.GooglePay.Amex.Accepted++;
+                }
+                else {
+                    checkresult.GooglePay.Amex.Refused++;
+                }
+            }
+            if (ResutArray[Z].Scheme === 'cartes_bancaires') {
+                if (ResutArray[Z].Status === 'Accepted') {
+                    checkresult.GooglePay.CB.Accepted++;
+                }
+                else {
+                    checkresult.GooglePay.CB.Refused++;
+                }
+            }
+        }
+        if (ResutArray[Z].PaymentMethod === 'Ideal') {
+            if (ResutArray[Z].Status === 'Accepted') {
+                checkresult.Ideal.Accepted++;
+            }
+            else {
+                checkresult.Ideal.Refused++;
+            }
+        }
+        if (ResutArray[Z].PaymentMethod === 'Bancontact') {
+            if (ResutArray[Z].Status === 'Accepted') {
+                checkresult.Bancontact.Accepted++;
+            }
+            else {
+                checkresult.Bancontact.Refused++;
+            }
+        }
+        if (ResutArray[Z].PaymentMethod === 'Giropay') {
+            checkresult.Giropay.transactions++;
+        }
+        if (ResutArray[Z].PaymentMethod === 'PayPal') {
+            checkresult.PayPal.transactions++;
+        }
+        if (ResutArray[Z].PaymentMethod === 'Multibanco') {
+            checkresult.Multibanco.transactions++;
+        }
+        if (ResutArray[Z].Disputes === true) {
+            checkresult.Disputes.DisputesNumber++;
+        }
+        if (ResutArray[Z].Refund === true) {
+            checkresult.Refund.RefundNumber++;
+        }
+    }
+
+    //Calculate Real AR 
+    function calculateAR(Accepted, Refused) {
+        AR = (Accepted / (Accepted + Refused)) * 100;
+        AR = Math.round((AR + Number.EPSILON) * 100) / 100;
+        return AR
+    }
+    checkresult.total.AR = calculateAR(checkresult.total.Accepted, checkresult.total.Refused);
+    checkresult.Card.Visa.AR = calculateAR(checkresult.Card.Visa.Accepted, checkresult.Card.Visa.Refused);
+    checkresult.Card.Mastercard.AR = calculateAR(checkresult.Card.Mastercard.Accepted, checkresult.Card.Mastercard.Refused);
+    checkresult.Card.Amex.AR = calculateAR(checkresult.Card.Amex.Accepted, checkresult.Card.Amex.Refused);
+    checkresult.Card.CB.AR = calculateAR(checkresult.Card.CB.Accepted, checkresult.Card.CB.Refused);
+    checkresult.ApplePay.Visa.AR = calculateAR(checkresult.ApplePay.Visa.Accepted, checkresult.ApplePay.Visa.Refused);
+    checkresult.ApplePay.Mastercard.AR = calculateAR(checkresult.ApplePay.Mastercard.Accepted, checkresult.ApplePay.Mastercard.Refused);
+    checkresult.ApplePay.Amex.AR = calculateAR(checkresult.ApplePay.Amex.Accepted, checkresult.ApplePay.Amex.Refused);
+    checkresult.ApplePay.CB.AR = calculateAR(checkresult.ApplePay.CB.Accepted, checkresult.ApplePay.CB.Refused);
+    checkresult.GooglePay.Visa.AR = calculateAR(checkresult.GooglePay.Visa.Accepted, checkresult.GooglePay.Visa.Refused);
+    checkresult.GooglePay.Mastercard.AR = calculateAR(checkresult.GooglePay.Mastercard.Accepted, checkresult.GooglePay.Mastercard.Refused);
+    checkresult.GooglePay.Amex.AR = calculateAR(checkresult.GooglePay.Amex.Accepted, checkresult.GooglePay.Amex.Refused);
+    checkresult.GooglePay.CB.AR = calculateAR(checkresult.GooglePay.CB.Accepted, checkresult.GooglePay.CB.Refused);
+    checkresult.Ideal.AR = calculateAR(checkresult.Ideal.Accepted, checkresult.Ideal.Refused);
+    checkresult.Bancontact.AR = calculateAR(checkresult.Bancontact.Accepted, checkresult.Bancontact.Refused);
+    checkresult.PayPal.AR = calculateAR(checkresult.PayPal, checkresult.PayPal);
+    checkresult.Multibanco.AR = calculateAR(checkresult.Multibanco, checkresult.Multibanco);
+    checkresult.Giropay.AR = calculateAR(checkresult.Giropay, checkresult.Giropay);
+
+    //Check calculation 
+    function checkcalculation(expected, reality) {
+        if (expected === reality) { return true }
+        else { return expected}
+    }
+    checkresult.Card.Visa.AcceptedCorrect = checkcalculation(numVisa, checkresult.Card.Visa.Accepted);
+    checkresult.Card.Visa.RefusedCorrect = checkcalculation(numVisaRefused, checkresult.Card.Visa.Refused);
+    checkresult.Card.Mastercard.AcceptedCorrect = checkcalculation(numMastercard, checkresult.Card.Mastercard.Accepted);
+    checkresult.Card.Mastercard.RefusedCorrect = checkcalculation(numMastercardRefused, checkresult.Card.Mastercard.Refused);
+    checkresult.Card.Amex.AcceptedCorrect = checkcalculation(numAmex, checkresult.Card.Amex.Accepted);
+    checkresult.Card.Amex.RefusedCorrect = checkcalculation(numAmexRefused, checkresult.Card.Amex.Refused);
+    checkresult.Card.CB.AcceptedCorrect = checkcalculation(numCB, checkresult.Card.CB.Accepted);
+    checkresult.Card.CB.RefusedCorrect = checkcalculation(numCBRefused, checkresult.Card.CB.Refused);
+    checkresult.ApplePay.Visa.AcceptedCorrect = checkcalculation(numApplePayVisa, checkresult.ApplePay.Visa.Accepted);
+    checkresult.ApplePay.Visa.RefusedCorrect = checkcalculation(numApplePayRefusedVisa, checkresult.ApplePay.Visa.Refused);
+    checkresult.ApplePay.Mastercard.AcceptedCorrect = checkcalculation(numApplePayMastercard, checkresult.ApplePay.Mastercard.Accepted);
+    checkresult.ApplePay.Mastercard.RefusedCorrect = checkcalculation(numApplePayRefusedMastercard, checkresult.ApplePay.Mastercard.Refused);
+    checkresult.ApplePay.Amex.AcceptedCorrect = checkcalculation(numApplePayAmex, checkresult.ApplePay.Amex.Accepted);
+    checkresult.ApplePay.Amex.RefusedCorrect = checkcalculation(numApplePayRefusedAmex, checkresult.ApplePay.Amex.Refused);
+    checkresult.ApplePay.CB.AcceptedCorrect = checkcalculation(numApplePayCB, checkresult.ApplePay.CB.Accepted);
+    checkresult.ApplePay.CB.RefusedCorrect = checkcalculation(numApplePayRefusedCB, checkresult.ApplePay.CB.Refused);
+    checkresult.GooglePay.Visa.AcceptedCorrect = checkcalculation(numGooglePayVisa, checkresult.GooglePay.Visa.Accepted);
+    checkresult.GooglePay.Visa.RefusedCorrect = checkcalculation(numGooglePayRefusedVisa, checkresult.GooglePay.Visa.Refused);
+    checkresult.GooglePay.Mastercard.AcceptedCorrect = checkcalculation(numGooglePayMastercard, checkresult.GooglePay.Mastercard.Accepted);
+    checkresult.GooglePay.Mastercard.RefusedCorrect = checkcalculation(numGooglePayRefusedMastercard, checkresult.GooglePay.Mastercard.Refused);
+    checkresult.GooglePay.Amex.AcceptedCorrect = checkcalculation(numGooglePayAmex, checkresult.GooglePay.Amex.Accepted);
+    checkresult.GooglePay.Amex.RefusedCorrect = checkcalculation(numGooglePayRefusedAmex, checkresult.GooglePay.Amex.Refused);
+    checkresult.GooglePay.CB.AcceptedCorrect = checkcalculation(numGooglePayCB, checkresult.GooglePay.CB.Accepted);
+    checkresult.GooglePay.CB.RefusedCorrect = checkcalculation(numGooglePayRefusedCB, checkresult.GooglePay.CB.Refused);
+    checkresult.PayPal.transactionCorrect = checkcalculation(numPayPalRate, checkresult.PayPal.transactions);
+    checkresult.Ideal.RefusedCorrect = checkcalculation(numIdealRate, checkresult.Ideal.Refused);
+    checkresult.Ideal.RefusedCorrect = checkcalculation(numIdealRefusedRate, checkresult.Ideal.Refused);
+    checkresult.Bancontact.RefusedCorrect = checkcalculation(numBancontactRate, checkresult.Bancontact.Refused);
+    checkresult.Bancontact.RefusedCorrect = checkcalculation(numBancontactRefusedRate, checkresult.Bancontact.Refused);
+    checkresult.Giropay.transactionCorrect = checkcalculation(numGiropayRate, checkresult.Giropay.transactions);
+    checkresult.Multibanco.transactionCorrect = checkcalculation(numMultiBancoRate, checkresult.Multibanco.transactions);
+    checkresult.Refund.RefundNumberCorrect = checkcalculation(numRefundRate, checkresult.Refund.RefundNumber);
+    checkresult.Disputes.DisputesNumberCorrect = checkcalculation(numDisputeRate, checkresult.Disputes.DisputesNumber);
+
+    console.log(checkresult)
+
+   // throw checkresult
+    function randomize(tab) {
+        var i, j, tmp;
+        for (i = tab.length - 1; i > 0; i--) {
+            j = Math.floor(Math.random() * (i + 1));
+            tmp = tab[i];
+            tab[i] = tab[j];
+            tab[j] = tmp;
+        }
+        return tab;
+    }
+    return randomize(ResutArray);
 }
-module.exports = { generateTransactionArray,GetOneProcessingChannelConfigured }
+module.exports = { generateTransactionArray, GetOneProcessingChannelConfigured }

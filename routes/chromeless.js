@@ -127,6 +127,7 @@ router.post('/GetNewBatch', async function (req, res, next) {
     }
     console.log(AvailableProcessingChannelForPaymentMethod);
     if (req.body.Card.CardRate + req.body.PayPalRate + req.body.IdealRate + req.body.BancontactRate + req.body.GiropayRate + req.body.MultiBancoRate != 100) {
+        console.log(req?.body?.Card?.CardRate + req?.body?.PayPalRate + req?.body?.IdealRate + req?.body?.BancontactRate + req?.body?.GiropayRate + req?.body?.MultiBancoRate)
         console.log("Total need to equal 100");
         res
             .status(500)
@@ -158,7 +159,7 @@ router.post('/GetNewBatch', async function (req, res, next) {
     }
     else {
         try {
-            batchresult = await CreateBatch.TRSBatch(req.body.ACCPRate, req.body.TRSNumber, req.body.Card.CardRate, req.body.Card.SCHEMRep, req.body.WaitTime, req.body.headless, req.body.PayPalRate, req.body.Card.ApplePayRate, req.body.Card.GooglePayRate, req.body.IdealRate, req.body.BancontactRate, req.body.GiropayRate, req.body.MultiBancoRate, req.body.currency, req.body.RefundRate, req.body.Processing_Channel_ID)
+            batchresult = await CreateBatch.TRSBatch(req.body.ACCPRate, req.body.TRSNumber, req.body.Card.CardRate, req.body.Card.SCHEMRep, req.body.WaitTime, req.body.headless, req.body.PayPalRate, req.body.Card.ApplePayRate, req.body.Card.GooglePayRate, req.body.IdealRate, req.body.BancontactRate, req.body.GiropayRate, req.body.MultiBancoRate, req.body.currency, req.body.RefundRate, req.body.DisputeRate, req.body.Processing_Channel_ID)
             res
                 .status(200)
                 .json(batchresult);
